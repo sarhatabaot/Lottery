@@ -408,7 +408,12 @@ public class LotteryGame
 					String target = lConfig.getTaxTarget();
 					plugin.Method.hasAccount(target);
 					final Method.MethodAccount targetaccount = plugin.Method.getAccount(target);
-					targetaccount.add(taxAmount);
+					if (targetaccount != null) {
+						targetaccount.add(taxAmount);
+					}
+					else {
+						plugin.getLogger().warning("Invalid economy account specified '"+target+"', tax lost.  Fix your 'taxTarget' in config file.");
+					}
 				}
 
 			}
