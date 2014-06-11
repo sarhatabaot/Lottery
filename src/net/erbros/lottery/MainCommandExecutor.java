@@ -326,7 +326,7 @@ public class MainCommandExecutor implements CommandExecutor
 			split = winnerArray.get(i).split(":");
 			if (split[2].equalsIgnoreCase("0"))
 			{
-				winListPrice = plugin.Method.format(Double.parseDouble(split[1]));
+				winListPrice = plugin.getMethod().format(Double.parseDouble(split[1]));
 			}
 			else
 			{

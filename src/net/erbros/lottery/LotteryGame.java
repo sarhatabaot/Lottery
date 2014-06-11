@@ -3,9 +3,9 @@ package net.erbros.lottery;
 import java.io.*;
 import java.security.SecureRandom;
 import java.util.ArrayList;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -33,8 +33,8 @@ public class LotteryGame
 			// Do the player have money?
 			// First checking if the player got an account, if not let's create
 			// it.
-			plugin.Method.hasAccount(player.getName());
-			final Method.MethodAccount account = plugin.Method.getAccount(player.getName());
+			plugin.getMethod().hasAccount(player.getName());
+			final Method.MethodAccount account = plugin.getMethod().getAccount(player.getName());
 
 			// And lets withdraw some money
 			if (account != null && account.hasEnough(lConfig.getCost() * numberOfTickets))
@@ -391,8 +391,8 @@ public class LotteryGame
 			int ticketsBought = playerInList(players.get(rand));
 			if (lConfig.useiConomy())
 			{
-				plugin.Method.hasAccount(players.get(rand));
-				final Method.MethodAccount account = plugin.Method.getAccount(players.get(rand));
+				plugin.getMethod().hasAccount(players.get(rand));
+				final Method.MethodAccount account = plugin.getMethod().getAccount(players.get(rand));
 
 				// Just make sure the account exists, or make it with default
 				// value.
@@ -406,8 +406,8 @@ public class LotteryGame
 				if (taxAmount() > 0 && lConfig.getTaxTarget().length() > 0)
 				{
 					String target = lConfig.getTaxTarget();
-					plugin.Method.hasAccount(target);
-					final Method.MethodAccount targetaccount = plugin.Method.getAccount(target);
+					plugin.getMethod().hasAccount(target);
+					final Method.MethodAccount targetaccount = plugin.getMethod().getAccount(target);
 					if (targetaccount != null) {
 						targetaccount.add(taxAmount);
 					}

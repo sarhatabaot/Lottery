@@ -30,7 +30,7 @@ public class PluginListener implements Listener
 
 			if (check)
 			{
-				this.plugin.Method = null;
+				this.plugin.setMethod(null);
 				System.out.println("[Lottery] Payment method was disabled. No longer accepting payments.");
 			}
 		}
@@ -43,9 +43,9 @@ public class PluginListener implements Listener
 		{
 			if (Methods.setMethod(Bukkit.getPluginManager()))
 			{
-				this.plugin.Method = Methods.getMethod();
+				this.plugin.setMethod(Methods.getMethod());
 				System.out.println(
-						"[Lottery] Payment method found (" + this.plugin.Method.getName() + " version: " + this.plugin.Method.getVersion() + ")");
+						"[Lottery] Payment method found (" + this.plugin.getMethod().getName() + " version: " + this.plugin.getMethod().getVersion() + ")");
 			}
 		}
 	}

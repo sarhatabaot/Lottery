@@ -13,8 +13,8 @@ import net.erbros.lottery.register.payment.Methods;
 public class Lottery extends JavaPlugin
 {
 
-	public Method Method = null;
-	public Methods Methods = null;
+	private Method method = null;
+	public Methods methods = null;
 	public boolean timerStarted = false;
 	private Server server = null;
 	private LotteryConfig lConfig;
@@ -224,5 +224,21 @@ public class Lottery extends JavaPlugin
 		final long extendTime = (long)exacttime;
 		lConfig.debugMsg("extendTime: " + extendTime);
 		return extendTime;
+	}
+
+	public Method getMethod()
+	{
+		if (method == null) {
+			Methods.setMethod(this.getServer().getPluginManager());
+		}
+		if (method == null) {
+			this.getLogger().severe("Could not find valid economy plugin.");
+		}
+		return method;
+	}
+
+	public void setMethod(Method method)
+	{
+		this.method = method;
 	}
 }
