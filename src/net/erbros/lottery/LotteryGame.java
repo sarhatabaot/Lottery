@@ -5,6 +5,9 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
+
+import net.erbros.lottery.events.LotteryBuyTicketEvent;
+import net.erbros.lottery.events.LotteryDrawEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -26,7 +29,12 @@ public class LotteryGame
 
 	public boolean addPlayer(final Player player, final int maxAmountOfTickets, final int numberOfTickets)
 	{
-
+		LotteryBuyTicketEvent buyEvent = new LotteryBuyTicketEvent( player, numberOfTickets );
+		Bukkit.getServer().getPluginManager().callEvent( buyEvent );
+		if(buyEvent.isCancelled())
+		{
+			return false;
+		}
 		// Do the ticket cost money or item?
 		if (lConfig.useiConomy())
 		{
@@ -438,8 +446,11 @@ public class LotteryGame
 
 			lConfig.setJackpot(0);
 
-
 			clearAfterGettingWinner();
+
+			int material =  lConfig.useiConomy() ? -1 : lConfig.getMaterial();
+			LotteryDrawEvent drawEvent = new LotteryDrawEvent( players.get(rand), ticketsBought, amount, material);
+			Bukkit.getServer().getPluginManager().callEvent( drawEvent );
 		}
 		return true;
 	}
