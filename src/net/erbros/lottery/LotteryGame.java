@@ -30,7 +30,7 @@ public class LotteryGame
 	public boolean addPlayer(final Player player, final int maxAmountOfTickets, final int numberOfTickets)
 	{
 		LotteryBuyTicketEvent buyEvent = new LotteryBuyTicketEvent( player, numberOfTickets );
-		Bukkit.getServer().getPluginManager().callEvent( buyEvent );
+		plugin.getServer().getPluginManager().callEvent( buyEvent );
 		if(buyEvent.isCancelled())
 		{
 			return false;
