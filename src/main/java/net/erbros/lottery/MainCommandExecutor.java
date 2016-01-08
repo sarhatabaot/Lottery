@@ -32,7 +32,7 @@ public class MainCommandExecutor implements CommandExecutor
     {
 
         // Lets check if we have found a plugin for money.
-        if ( lConfig.useEconomy() && plugin.hasEconomy() )
+        if ( lConfig.useEconomy() && !plugin.hasEconomy() )
         {
             lConfig.debugMsg( "No money plugin found yet." );
             lGame.sendMessage( sender, "ErrorPlugin" );
