@@ -1,16 +1,16 @@
 package net.erbros.lottery;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.metadata.FixedMetadataValue;
-import net.erbros.lottery.register.payment.Methods;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 
 
 public class MainCommandExecutor implements CommandExecutor
@@ -32,7 +32,7 @@ public class MainCommandExecutor implements CommandExecutor
 	{
 
 		// Lets check if we have found a plugin for money.
-		if (lConfig.useiConomy() && !Methods.hasMethod())
+		if (lConfig.useEconomy() && plugin.hasEconomy())
 		{
 			lConfig.debugMsg("No money plugin found yet.");
 			lGame.sendMessage(sender, "ErrorPlugin");
@@ -152,7 +152,7 @@ public class MainCommandExecutor implements CommandExecutor
 		}
 
 		// if not iConomy, make players check for claims.
-		if (!lConfig.useiConomy())
+		if (!lConfig.useEconomy())
 		{
 			lGame.sendMessage(sender, "CheckClaim");
 		}
@@ -326,7 +326,7 @@ public class MainCommandExecutor implements CommandExecutor
 			split = winnerArray.get(i).split(":");
 			if (split[2].equalsIgnoreCase("0"))
 			{
-				winListPrice = plugin.getMethod().format(Double.parseDouble(split[1]));
+				winListPrice = plugin.getEconomy().format(Double.parseDouble(split[1]));
 			}
 			else
 			{

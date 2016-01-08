@@ -1,18 +1,18 @@
 package net.erbros.lottery;
 
+import net.erbros.lottery.events.LotteryBuyTicketEvent;
+import net.erbros.lottery.events.LotteryDrawEvent;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+
 import java.io.*;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
-
-import net.erbros.lottery.events.LotteryBuyTicketEvent;
-import net.erbros.lottery.events.LotteryDrawEvent;
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import net.erbros.lottery.register.payment.Method;
 
 
 public class LotteryGame
@@ -36,19 +36,23 @@ public class LotteryGame
 			return false;
 		}
 		// Do the ticket cost money or item?
-		if (lConfig.useiConomy())
+		if (lConfig.useEconomy() && plugin.hasEconomy())
 		{
 			// Do the player have money?
 			// First checking if the player got an account, if not let's create
 			// it.
-			plugin.getMethod().hasAccount(player.getName());
-			final Method.MethodAccount account = plugin.getMethod().getAccount(player.getName());
+			OfflinePlayer p = Bukkit.getOfflinePlayer( player.getUniqueId() );
+			if(!plugin.getEconomy().hasAccount(p))
+			{
+				plugin.getEconomy().createPlayerAccount( p );
+			}
+			final double balance = plugin.getEconomy().getBalance(p);
 
 			// And lets withdraw some money
-			if (account != null && account.hasEnough(lConfig.getCost() * numberOfTickets))
+			if (balance > lConfig.getCost() * numberOfTickets)
 			{
 				// Removing coins from players account.
-				account.subtract(lConfig.getCost() * numberOfTickets);
+				plugin.getEconomy().withdrawPlayer(p, lConfig.getCost() * numberOfTickets);
 			}
 			else
 			{
@@ -149,7 +153,7 @@ public class LotteryGame
 	{
 		double amount;
 		final ArrayList<String> players = playersInFile("lotteryPlayers.txt");
-		amount = players.size() * Etc.formatAmount(lConfig.getCost(), lConfig.useiConomy());
+		amount = players.size() * Etc.formatAmount(lConfig.getCost(), lConfig.useEconomy());
 		lConfig.debugMsg("playerno: " + players.size() + " amount: " + amount);
 		// Set the net payout as configured in the config.
 		if (lConfig.getNetPayout() > 0)
@@ -164,7 +168,7 @@ public class LotteryGame
 		amount += lConfig.getJackpot();
 
 		// format it once again.
-		amount = Etc.formatAmount(amount, lConfig.useiConomy());
+		amount = Etc.formatAmount(amount, lConfig.useEconomy());
 
 		return amount;
 	}
@@ -174,19 +178,19 @@ public class LotteryGame
 		double amount = 0;
 
 		// we only have tax is the net payout is between 0 and 100.
-		if (lConfig.getNetPayout() >= 100 || lConfig.getNetPayout() <= 0 || !lConfig.useiConomy())
+		if (lConfig.getNetPayout() >= 100 || lConfig.getNetPayout() <= 0 || !lConfig.useEconomy())
 		{
 			return amount;
 		}
 
 		final ArrayList<String> players = playersInFile("lotteryPlayers.txt");
-		amount = players.size() * Etc.formatAmount(lConfig.getCost(), lConfig.useiConomy());
+		amount = players.size() * Etc.formatAmount(lConfig.getCost(), lConfig.useEconomy());
 
 		// calculate the tax.
 		amount = amount * (1 - (lConfig.getNetPayout() / 100));
 
 		// format it once again.
-		amount = Etc.formatAmount(amount, lConfig.useiConomy());
+		amount = Etc.formatAmount( amount, lConfig.useEconomy() );
 
 		return amount;
 	}
@@ -376,9 +380,9 @@ public class LotteryGame
 					// No winner this time, pot goes on to jackpot!
 					final double jackpot = winningAmount();
 
-					lConfig.setJackpot(jackpot);
+					lConfig.setJackpot( jackpot );
 
-					addToWinnerList("Jackpot", jackpot, lConfig.useiConomy() ? 0 : lConfig.getMaterial());
+					addToWinnerList("Jackpot", jackpot, lConfig.useEconomy() ? 0 : lConfig.getMaterial());
 					lConfig.setLastwinner("Jackpot");
 					lConfig.setLastwinneramount(jackpot);
 					broadcastMessage("NoWinnerRollover", Etc.formatCost(jackpot, lConfig));
@@ -397,15 +401,18 @@ public class LotteryGame
 			lConfig.debugMsg("Rand: " + Integer.toString(rand));
 			double amount = winningAmount();
 			int ticketsBought = playerInList(players.get(rand));
-			if (lConfig.useiConomy())
+			if (lConfig.useEconomy())
 			{
-				plugin.getMethod().hasAccount(players.get(rand));
-				final Method.MethodAccount account = plugin.getMethod().getAccount(players.get(rand));
+				OfflinePlayer p = Bukkit.getOfflinePlayer( players.get(rand) );
+				if(!plugin.getEconomy().hasAccount( p ))
+				{
+					plugin.getEconomy().createPlayerAccount( p );
+				}
 
 				// Just make sure the account exists, or make it with default
 				// value.
 				// Add money to account.
-				account.add(amount);
+				plugin.getEconomy().depositPlayer( p, amount );
 				// Announce the winner:
 				broadcastMessage("WinnerCongrat", players.get(rand), Etc.formatCost(amount, lConfig), ticketsBought, lConfig.getPlural("ticket", ticketsBought));
 				addToWinnerList(players.get(rand), amount, 0);
@@ -413,28 +420,30 @@ public class LotteryGame
 				double taxAmount = taxAmount();
 				if (taxAmount() > 0 && lConfig.getTaxTarget().length() > 0)
 				{
-					String target = lConfig.getTaxTarget();
-					plugin.getMethod().hasAccount(target);
-					final Method.MethodAccount targetaccount = plugin.getMethod().getAccount(target);
-					if (targetaccount != null) {
-						targetaccount.add(taxAmount);
+					OfflinePlayer target = Bukkit.getOfflinePlayer( lConfig.getTaxTarget() );
+					if(target == null)
+					{
+						plugin.getLogger().warning("Invalid economy account specified '"+lConfig.getTaxTarget()+"', tax lost.  Fix your 'taxTarget' in config file.");
 					}
-					else {
-						plugin.getLogger().warning("Invalid economy account specified '"+target+"', tax lost.  Fix your 'taxTarget' in config file.");
+					if(!plugin.getEconomy().hasAccount( target ))
+					{
+						plugin.getEconomy().createPlayerAccount( target );
 					}
+					plugin.getEconomy().depositPlayer( target, taxAmount );
+
 				}
 
 			}
 			else
 			{
 				// let's throw it to an int.
-				final int matAmount = (int)Etc.formatAmount(amount, lConfig.useiConomy());
+				final int matAmount = (int)Etc.formatAmount(amount, lConfig.useEconomy());
 				amount = (double)matAmount;
-				broadcastMessage("WinnerCongrat", players.get(rand), Etc.formatCost(amount, lConfig), ticketsBought, lConfig.getPlural("ticket", ticketsBought));
+				broadcastMessage( "WinnerCongrat", players.get( rand ), Etc.formatCost( amount, lConfig ), ticketsBought, lConfig.getPlural("ticket", ticketsBought ) );
 				broadcastMessage("WinnerCongratClaim");
-				addToWinnerList(players.get(rand), amount, lConfig.getMaterial());
+				addToWinnerList(players.get(rand), amount, lConfig.getMaterial() );
 
-				addToClaimList(players.get(rand), matAmount, lConfig.getMaterial());
+				addToClaimList( players.get( rand ), matAmount, lConfig.getMaterial());
 			}
 			broadcastMessage(
 					"WinnerSummary", Etc.realPlayersFromList(players).size(), lConfig.getPlural(
@@ -448,7 +457,7 @@ public class LotteryGame
 
 			clearAfterGettingWinner();
 
-			int material =  lConfig.useiConomy() ? -1 : lConfig.getMaterial();
+			int material =  lConfig.useEconomy() ? -1 : lConfig.getMaterial();
 			LotteryDrawEvent drawEvent = new LotteryDrawEvent( players.get(rand), ticketsBought, amount, material);
 			Bukkit.getServer().getPluginManager().callEvent( drawEvent );
 		}

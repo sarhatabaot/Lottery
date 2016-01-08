@@ -1,11 +1,12 @@
 package net.erbros.lottery;
 
+import org.bukkit.configuration.file.FileConfiguration;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
-import org.bukkit.configuration.file.FileConfiguration;
 
 
 public class LotteryConfig
@@ -271,7 +272,7 @@ public class LotteryConfig
 		set("config.nextexec", nextexec);
 	}
 
-	public boolean useiConomy()
+	public boolean useEconomy()
 	{
 		return useiConomy;
 	}
@@ -405,6 +406,6 @@ public class LotteryConfig
 
 	public String formatCurrency(double amount)
 	{
-		return plugin.getMethod().format(amount);
+		return plugin.getEconomy().format( amount );
 	}
 }

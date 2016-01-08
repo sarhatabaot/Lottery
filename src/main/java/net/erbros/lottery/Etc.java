@@ -1,24 +1,25 @@
 package net.erbros.lottery;
 
+import org.bukkit.Material;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import org.bukkit.Material;
 
 
 public class Etc
 {
 	public static String formatCost(double cost, LotteryConfig lConfig)
 	{
-		if (lConfig.useiConomy())
+		if (lConfig.useEconomy())
 		{
-			return lConfig.formatCurrency((formatAmount(cost, lConfig.useiConomy())));
+			return lConfig.formatCurrency((formatAmount(cost, lConfig.useEconomy())));
 		}
 		else
 		{
 			return String.valueOf(
-					(int)formatAmount(cost, lConfig.useiConomy())).concat(
+					(int)formatAmount(cost, lConfig.useEconomy())).concat(
 					" " + formatMaterialName(lConfig.getMaterial()));
 		}
 	}
