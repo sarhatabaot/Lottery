@@ -59,6 +59,7 @@ public class Lottery extends JavaPlugin
             // Set first time to be config hours later? Millisecs, * 1000.
             setNextexec( System.currentTimeMillis() + extendTime() );
         }
+        setupEconomy();
 
         // Start the timer for the first time.
         startTimerSchedule( false );
