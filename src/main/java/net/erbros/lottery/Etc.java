@@ -117,21 +117,21 @@ public class Etc
         return stringTimeLeft;
     }
 
-    public static Map<UUID, Integer> realPlayersFromList( final Map<UUID, String> ticketList )
+    public static Map<UUID, Integer> realPlayersFromList( final List<UUIDNameEntry> ticketList )
     {
         final Map<UUID, Integer> playerList = new HashMap<>();
         int value;
-        for ( UUID check : ticketList.keySet() )
+        for ( UUIDNameEntry check : ticketList )
         {
-            if ( playerList.containsKey( check ) )
+            if ( playerList.containsKey( check.getUUID() ) )
             {
-                value = Integer.parseInt( playerList.get( check ).toString() ) + 1;
+                value = Integer.parseInt( playerList.get( check.getUUID() ).toString() ) + 1;
             }
             else
             {
                 value = 1;
             }
-            playerList.put( check, value );
+            playerList.put( check.getUUID(), value );
         }
         return playerList;
     }

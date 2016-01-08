@@ -10,10 +10,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.io.*;
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 
@@ -146,9 +143,9 @@ public class LotteryGame
         return numberOfTickets;
     }
 
-    public Map<UUID, String> playersInFile( final String file )
+    public List<UUIDNameEntry> playersInFile( final String file )
     {
-        final Map<UUID, String> players = new HashMap<>();
+        final List<UUIDNameEntry> players = new ArrayList<>();
         try
         {
             final BufferedReader in = new BufferedReader(
@@ -176,7 +173,7 @@ public class LotteryGame
                     continue;
                 }
 
-                players.put( uuid, split[1] );
+                players.add( new UUIDNameEntry( uuid, split[1] ) );
             }
             in.close();
         }
@@ -189,7 +186,7 @@ public class LotteryGame
     public double winningAmount()
     {
         double amount;
-        final Map<UUID, String> players = playersInFile( "lotteryPlayers.txt" );
+        final List<UUIDNameEntry> players = playersInFile( "lotteryPlayers.txt" );
         amount = players.size() * Etc.formatAmount( lConfig.getCost(), lConfig.useEconomy() );
         lConfig.debugMsg( "playerno: " + players.size() + " amount: " + amount );
         // Set the net payout as configured in the config.
@@ -220,7 +217,7 @@ public class LotteryGame
             return amount;
         }
 
-        final Map<UUID, String> players = playersInFile( "lotteryPlayers.txt" );
+        final List<UUIDNameEntry> players = playersInFile( "lotteryPlayers.txt" );
         amount = players.size() * Etc.formatAmount( lConfig.getCost(), lConfig.useEconomy() );
 
         // calculate the tax.
@@ -235,7 +232,7 @@ public class LotteryGame
     public int ticketsSold()
     {
         int sold;
-        final Map<UUID, String> players = playersInFile( "lotteryPlayers.txt" );
+        final List<UUIDNameEntry> players = playersInFile( "lotteryPlayers.txt" );
         sold = players.size();
         return sold;
     }
@@ -392,8 +389,7 @@ public class LotteryGame
 
     public boolean getWinner()
     {
-        final Map<UUID, String> players = playersInFile( "lotteryPlayers.txt" );
-        final ArrayList<UUID> playersCopy = new ArrayList<>( players.keySet() );
+        final List<UUIDNameEntry> players = playersInFile( "lotteryPlayers.txt" );
         if ( players.isEmpty() )
         {
             broadcastMessage( "NoWinnerTickets" );
@@ -432,10 +428,10 @@ public class LotteryGame
 
             lConfig.debugMsg( "Rand: " + Integer.toString( rand ) );
             double amount = winningAmount();
-            int ticketsBought = playerInList( playersCopy.get( rand ) );
+            int ticketsBought = playerInList( players.get( rand ).getUUID() );
             if ( lConfig.useEconomy() )
             {
-                OfflinePlayer p = Bukkit.getOfflinePlayer( playersCopy.get( rand ) );
+                OfflinePlayer p = Bukkit.getOfflinePlayer( players.get( rand ).getUUID() );
                 if ( !plugin.getEconomy().hasAccount( p ) )
                 {
                     plugin.getEconomy().createPlayerAccount( p );
@@ -446,8 +442,8 @@ public class LotteryGame
                 // Add money to account.
                 plugin.getEconomy().depositPlayer( p, amount );
                 // Announce the winner:
-                broadcastMessage( "WinnerCongrat", playersCopy.get( rand ), Etc.formatCost( amount, lConfig ), ticketsBought, lConfig.getPlural( "ticket", ticketsBought ) );
-                addToWinnerList( players.get( playersCopy.get( rand ) ), amount, 0 );
+                broadcastMessage( "WinnerCongrat", players.get(  rand ).getName(), Etc.formatCost( amount, lConfig ), ticketsBought, lConfig.getPlural( "ticket", ticketsBought ) );
+                addToWinnerList( players.get(  rand ).getName(), amount, 0 );
 
                 double taxAmount = taxAmount();
                 if ( taxAmount() > 0 && lConfig.getTaxTarget().length() > 0 )
@@ -470,18 +466,18 @@ public class LotteryGame
                 final int matAmount = (int) Etc.formatAmount( amount, lConfig.useEconomy() );
                 amount = (double) matAmount;
 
-                broadcastMessage( "WinnerCongrat", players.get( playersCopy.get( rand ) ), Etc.formatCost( amount, lConfig ), ticketsBought, lConfig.getPlural( "ticket", ticketsBought ) );
+                broadcastMessage( "WinnerCongrat", players.get(  rand ).getName(), Etc.formatCost( amount, lConfig ), ticketsBought, lConfig.getPlural( "ticket", ticketsBought ) );
                 broadcastMessage( "WinnerCongratClaim" );
-                addToWinnerList( players.get( playersCopy.get( rand ) ), amount, lConfig.getMaterial() );
+                addToWinnerList( players.get(  rand ).getName(), amount, lConfig.getMaterial() );
 
-                addToClaimList( playersCopy.get( rand ), matAmount, lConfig.getMaterial() );
+                addToClaimList( players.get(rand).getUUID(), matAmount, lConfig.getMaterial() );
             }
             broadcastMessage(
                     "WinnerSummary", Etc.realPlayersFromList( players ).size(), lConfig.getPlural(
                             "player", Etc.realPlayersFromList( players ).size() ), players.size(), lConfig.getPlural( "ticket", players.size() ) );
 
             // Add last winner to config.
-            lConfig.setLastwinner( players.get( playersCopy.get( rand ) ) );
+            lConfig.setLastwinner( players.get( rand ).getName() );
             lConfig.setLastwinneramount( amount );
 
             lConfig.setJackpot( 0 );
@@ -489,7 +485,7 @@ public class LotteryGame
             clearAfterGettingWinner();
 
             int material = lConfig.useEconomy() ? -1 : lConfig.getMaterial();
-            LotteryDrawEvent drawEvent = new LotteryDrawEvent( playersCopy.get( rand ), ticketsBought, amount, material );
+            LotteryDrawEvent drawEvent = new LotteryDrawEvent( players.get( rand ).getUUID(), ticketsBought, amount, material );
             Bukkit.getServer().getPluginManager().callEvent( drawEvent );
         }
         return true;
