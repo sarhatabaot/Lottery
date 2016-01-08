@@ -3,16 +3,18 @@ package net.erbros.lottery.events;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
+import java.util.UUID;
+
 public class LotteryDrawEvent extends Event
 {
 
-    private String winner;
+    private UUID winner;
     private int ticketsBought;
     private double winnings;
     private int material;
     private static final HandlerList handlers = new HandlerList();
 
-    public LotteryDrawEvent( String winner, int ticketsBought, double winnings, int material )
+    public LotteryDrawEvent( UUID winner, int ticketsBought, double winnings, int material )
     {
         this.winner = winner;
         this.ticketsBought = ticketsBought;
@@ -31,7 +33,7 @@ public class LotteryDrawEvent extends Event
         return handlers;
     }
 
-    public String getWinner()
+    public UUID getWinner()
     {
         return winner;
     }

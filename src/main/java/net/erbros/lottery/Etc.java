@@ -2,10 +2,7 @@ package net.erbros.lottery;
 
 import org.bukkit.Material;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 
 public class Etc
@@ -120,11 +117,11 @@ public class Etc
         return stringTimeLeft;
     }
 
-    public static Map<String, Integer> realPlayersFromList( final List<String> ticketList )
+    public static Map<UUID, Integer> realPlayersFromList( final Map<UUID, String> ticketList )
     {
-        final Map<String, Integer> playerList = new HashMap<String, Integer>();
+        final Map<UUID, Integer> playerList = new HashMap<>();
         int value;
-        for ( String check : ticketList )
+        for ( UUID check : ticketList.keySet() )
         {
             if ( playerList.containsKey( check ) )
             {

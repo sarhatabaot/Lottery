@@ -11,6 +11,9 @@ import org.bukkit.inventory.ItemStack;
 import java.io.*;
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 
@@ -82,7 +85,7 @@ public class LotteryGame
                     new FileWriter( plugin.getDataFolder() + File.separator + "lotteryPlayers.txt", true ) );
             for ( Integer i = 0; i < numberOfTickets; i++ )
             {
-                out.write( player.getName() );
+                out.write( player.getUniqueId()+";"+player.getName() );
                 out.newLine();
             }
             out.close();
@@ -96,10 +99,10 @@ public class LotteryGame
 
     public Integer playerInList( final Player player )
     {
-        return playerInList( player.getName() );
+        return playerInList( player.getUniqueId() );
     }
 
-    public Integer playerInList( final String player )
+    public Integer playerInList( final UUID player )
     {
         int numberOfTickets = 0;
         try
@@ -110,8 +113,26 @@ public class LotteryGame
             String str;
             while ( ( str = in.readLine() ) != null )
             {
+                if ( str.trim().isEmpty() )
+                {
+                    continue;
+                }
+                String[] split = str.split( ";" );
+                if ( split.length < 2 )
+                {
+                    continue;
+                }
+                UUID uuid;
+                try
+                {
+                    uuid = UUID.fromString( str );
+                }
+                catch ( IllegalArgumentException ex )
+                {
+                    continue;
+                }
 
-                if ( str.equalsIgnoreCase( player ) )
+                if ( uuid.equals( player ) )
                 {
                     numberOfTickets++;
                 }
@@ -125,9 +146,9 @@ public class LotteryGame
         return numberOfTickets;
     }
 
-    public ArrayList<String> playersInFile( final String file )
+    public Map<UUID, String> playersInFile( final String file )
     {
-        final ArrayList<String> players = new ArrayList<String>();
+        final Map<UUID, String> players = new HashMap<>();
         try
         {
             final BufferedReader in = new BufferedReader(
@@ -136,11 +157,30 @@ public class LotteryGame
             while ( ( str = in.readLine() ) != null )
             {
                 // add players to array.
-                players.add( str );
+                if ( str.trim().isEmpty() )
+                {
+                    continue;
+                }
+                String[] split = str.split( ";" );
+                if ( split.length < 2 )
+                {
+                    continue;
+                }
+                UUID uuid;
+                try
+                {
+                    uuid = UUID.fromString( str );
+                }
+                catch ( IllegalArgumentException ex )
+                {
+                    continue;
+                }
+
+                players.put( uuid, split[1] );
             }
             in.close();
         }
-        catch ( IOException e )
+        catch ( IOException ignored )
         {
         }
         return players;
@@ -149,7 +189,7 @@ public class LotteryGame
     public double winningAmount()
     {
         double amount;
-        final ArrayList<String> players = playersInFile( "lotteryPlayers.txt" );
+        final Map<UUID, String> players = playersInFile( "lotteryPlayers.txt" );
         amount = players.size() * Etc.formatAmount( lConfig.getCost(), lConfig.useEconomy() );
         lConfig.debugMsg( "playerno: " + players.size() + " amount: " + amount );
         // Set the net payout as configured in the config.
@@ -180,7 +220,7 @@ public class LotteryGame
             return amount;
         }
 
-        final ArrayList<String> players = playersInFile( "lotteryPlayers.txt" );
+        final Map<UUID, String> players = playersInFile( "lotteryPlayers.txt" );
         amount = players.size() * Etc.formatAmount( lConfig.getCost(), lConfig.useEconomy() );
 
         // calculate the tax.
@@ -195,7 +235,7 @@ public class LotteryGame
     public int ticketsSold()
     {
         int sold;
-        final ArrayList<String> players = playersInFile( "lotteryPlayers.txt" );
+        final Map<UUID, String> players = playersInFile( "lotteryPlayers.txt" );
         sold = players.size();
         return sold;
     }
@@ -213,7 +253,7 @@ public class LotteryGame
             while ( ( str = in.readLine() ) != null )
             {
                 final String[] split = str.split( ":" );
-                if ( split[0].equals( player.getName() ) )
+                if ( split[0].equals( player.getUniqueId().toString() ) )
                 {
                     // Adding this to player claim.
                     claimArray.add( str );
@@ -262,14 +302,14 @@ public class LotteryGame
         }
     }
 
-    public void addToClaimList( final String playerName, final int winningAmount, final int winningMaterial )
+    public void addToClaimList( final UUID player, final int winningAmount, final int winningMaterial )
     {
         // Then first add new winner, and after that the old winners.
         try
         {
             final BufferedWriter out = new BufferedWriter(
                     new FileWriter( plugin.getDataFolder() + File.separator + "lotteryClaim.txt", true ) );
-            out.write( playerName + ":" + winningAmount + ":" + winningMaterial );
+            out.write( player + ":" + winningAmount + ":" + winningMaterial );
             out.newLine();
             out.close();
         }
@@ -352,8 +392,8 @@ public class LotteryGame
 
     public boolean getWinner()
     {
-        final ArrayList<String> players = playersInFile( "lotteryPlayers.txt" );
-
+        final Map<UUID, String> players = playersInFile( "lotteryPlayers.txt" );
+        final ArrayList<UUID> playersCopy = new ArrayList<>( players.keySet() );
         if ( players.isEmpty() )
         {
             broadcastMessage( "NoWinnerTickets" );
@@ -392,10 +432,10 @@ public class LotteryGame
 
             lConfig.debugMsg( "Rand: " + Integer.toString( rand ) );
             double amount = winningAmount();
-            int ticketsBought = playerInList( players.get( rand ) );
+            int ticketsBought = playerInList( playersCopy.get( rand ) );
             if ( lConfig.useEconomy() )
             {
-                OfflinePlayer p = Bukkit.getOfflinePlayer( players.get( rand ) );
+                OfflinePlayer p = Bukkit.getOfflinePlayer( playersCopy.get( rand ) );
                 if ( !plugin.getEconomy().hasAccount( p ) )
                 {
                     plugin.getEconomy().createPlayerAccount( p );
@@ -406,8 +446,8 @@ public class LotteryGame
                 // Add money to account.
                 plugin.getEconomy().depositPlayer( p, amount );
                 // Announce the winner:
-                broadcastMessage( "WinnerCongrat", players.get( rand ), Etc.formatCost( amount, lConfig ), ticketsBought, lConfig.getPlural( "ticket", ticketsBought ) );
-                addToWinnerList( players.get( rand ), amount, 0 );
+                broadcastMessage( "WinnerCongrat", playersCopy.get( rand ), Etc.formatCost( amount, lConfig ), ticketsBought, lConfig.getPlural( "ticket", ticketsBought ) );
+                addToWinnerList( players.get( playersCopy.get( rand ) ), amount, 0 );
 
                 double taxAmount = taxAmount();
                 if ( taxAmount() > 0 && lConfig.getTaxTarget().length() > 0 )
@@ -429,18 +469,19 @@ public class LotteryGame
                 // let's throw it to an int.
                 final int matAmount = (int) Etc.formatAmount( amount, lConfig.useEconomy() );
                 amount = (double) matAmount;
-                broadcastMessage( "WinnerCongrat", players.get( rand ), Etc.formatCost( amount, lConfig ), ticketsBought, lConfig.getPlural( "ticket", ticketsBought ) );
-                broadcastMessage( "WinnerCongratClaim" );
-                addToWinnerList( players.get( rand ), amount, lConfig.getMaterial() );
 
-                addToClaimList( players.get( rand ), matAmount, lConfig.getMaterial() );
+                broadcastMessage( "WinnerCongrat", players.get( playersCopy.get( rand ) ), Etc.formatCost( amount, lConfig ), ticketsBought, lConfig.getPlural( "ticket", ticketsBought ) );
+                broadcastMessage( "WinnerCongratClaim" );
+                addToWinnerList( players.get( playersCopy.get( rand ) ), amount, lConfig.getMaterial() );
+
+                addToClaimList( playersCopy.get( rand ), matAmount, lConfig.getMaterial() );
             }
             broadcastMessage(
                     "WinnerSummary", Etc.realPlayersFromList( players ).size(), lConfig.getPlural(
                             "player", Etc.realPlayersFromList( players ).size() ), players.size(), lConfig.getPlural( "ticket", players.size() ) );
 
             // Add last winner to config.
-            lConfig.setLastwinner( players.get( rand ) );
+            lConfig.setLastwinner( players.get( playersCopy.get( rand ) ) );
             lConfig.setLastwinneramount( amount );
 
             lConfig.setJackpot( 0 );
@@ -448,7 +489,7 @@ public class LotteryGame
             clearAfterGettingWinner();
 
             int material = lConfig.useEconomy() ? -1 : lConfig.getMaterial();
-            LotteryDrawEvent drawEvent = new LotteryDrawEvent( players.get( rand ), ticketsBought, amount, material );
+            LotteryDrawEvent drawEvent = new LotteryDrawEvent( playersCopy.get( rand ), ticketsBought, amount, material );
             Bukkit.getServer().getPluginManager().callEvent( drawEvent );
         }
         return true;
