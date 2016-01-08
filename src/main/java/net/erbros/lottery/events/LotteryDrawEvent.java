@@ -13,10 +13,12 @@ public class LotteryDrawEvent extends Event
     private double winnings;
     private int material;
     private static final HandlerList handlers = new HandlerList();
+    private String winnerName;
 
-    public LotteryDrawEvent( UUID winner, int ticketsBought, double winnings, int material )
+    public LotteryDrawEvent( UUID winner, String winnerName, int ticketsBought, double winnings, int material )
     {
         this.winner = winner;
+        this.winnerName = winnerName;
         this.ticketsBought = ticketsBought;
         this.winnings = winnings;
         this.material = material;
@@ -36,6 +38,11 @@ public class LotteryDrawEvent extends Event
     public UUID getWinner()
     {
         return winner;
+    }
+
+    public String getWinnerName()
+    {
+        return winnerName;
     }
 
     public int getTicketsBought()

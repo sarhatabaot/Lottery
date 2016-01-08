@@ -485,7 +485,7 @@ public class LotteryGame
             clearAfterGettingWinner();
 
             int material = lConfig.useEconomy() ? -1 : lConfig.getMaterial();
-            LotteryDrawEvent drawEvent = new LotteryDrawEvent( players.get( rand ).getUUID(), ticketsBought, amount, material );
+            LotteryDrawEvent drawEvent = new LotteryDrawEvent( players.get( rand ).getUUID(), players.get( rand ).getName(), ticketsBought, amount, material );
             Bukkit.getServer().getPluginManager().callEvent( drawEvent );
         }
         return true;
