@@ -1,10 +1,10 @@
 name: Lottery
 main: net.erbros.lottery.Lottery
-version: 0.9.4
+version: 1.0.0
 authors:
   - Erbros
   - KHobbits
-website: www.erbros.net
+  - Kukelekuuk00
 commands:
   lottery:
     description: Provides access to Permissions commands and information.
