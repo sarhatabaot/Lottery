@@ -125,7 +125,7 @@ public class LotteryGame
                 UUID uuid;
                 try
                 {
-                    uuid = UUID.fromString( str );
+                    uuid = UUID.fromString( split[0] );
                 }
                 catch ( IllegalArgumentException ex )
                 {
@@ -169,7 +169,7 @@ public class LotteryGame
                 UUID uuid;
                 try
                 {
-                    uuid = UUID.fromString( str );
+                    uuid = UUID.fromString( split[0] );
                 }
                 catch ( IllegalArgumentException ex )
                 {
