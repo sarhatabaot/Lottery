@@ -27,7 +27,6 @@ public class LotteryConfig
     private boolean clearExtraInPot;
     private int maxTicketsEachUser;
     private int ticketsAvailable;
-    private double jackpot;
     private String lastwinner;
     private double lastwinneramount;
     private boolean buyingExtendDeadline;
@@ -65,7 +64,6 @@ public class LotteryConfig
         netPayout = config.getDouble( "config.netPayout", 100 );
         maxTicketsEachUser = config.getInt( "config.maxTicketsEachUser", 1 );
         ticketsAvailable = config.getInt( "config.numberOfTicketsAvailable", 0 );
-        jackpot = config.getDouble( "config.jackpot", 0 );
         nextexec = config.getLong( "config.nextexec" );
         cost = Etc.formatAmount( config.getDouble( "config.cost", 5 ), useiConomy );
         lastwinner = config.getString( "config.lastwinner", "" );
@@ -126,8 +124,6 @@ public class LotteryConfig
         messages.put( "MessagesDisabled", formatCustomMessage( "message.MessagesDisabled", "%prefix% You will no longer receive Lottery broadcast messages." ) );
 
         messages.put( "NoWinnerTickets", formatCustomMessage( "message.NoWinnerTickets", "%prefix% No tickets sold this round. That\'s a shame." ) );
-        messages.put(
-                "NoWinnerRollover", formatCustomMessage( "message.NoWinnerRollover", "%prefix% No winner, we have a rollover! &a%0% &rwent to jackpot!" ) );
         messages.put( "WinnerCongrat", formatCustomMessage( "message.WinnerCongrat", "%prefix% Congratulations go to %0% &rfor winning &c%1%&r with &c%2%&r %3%." ) );
         messages.put( "WinnerCongratClaim", formatCustomMessage( "message.WinnerCongratClaim", "%prefix% Use &c/lottery claim &rto claim the winnings." ) );
         messages.put( "WinnerSummary", formatCustomMessage( "message.WinnerSummary", "%prefix% There was a total of %0% %1% buying %2% %3%" ) );
@@ -348,17 +344,6 @@ public class LotteryConfig
     public int getTicketsAvailable()
     {
         return ticketsAvailable;
-    }
-
-    public double getJackpot()
-    {
-        return jackpot;
-    }
-
-    public void setJackpot( final double jackpot )
-    {
-        this.jackpot = jackpot;
-        set( "config.jackpot", jackpot );
     }
 
     public String getLastwinner()

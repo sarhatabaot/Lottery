@@ -132,7 +132,7 @@ public class MainCommandExecutor implements CommandExecutor
         if ( lConfig.getMaxTicketsEachUser() > 1 )
         {
             lGame.sendMessage(
-                    player, "YourTickets", lGame.playerInList( player ), lConfig.getPlural( "ticket", lGame.playerInList( player ) ) );
+                    player, "YourTickets", lGame.getTickets( player ), lConfig.getPlural( "ticket", lGame.getTickets( player ) ) );
         }
         // Number of tickets available?
         if ( lConfig.getTicketsAvailable() > 0 )
@@ -211,7 +211,7 @@ public class MainCommandExecutor implements CommandExecutor
             }
         }
 
-        final int allowedTickets = lConfig.getMaxTicketsEachUser() - lGame.playerInList( player );
+        final int allowedTickets = lConfig.getMaxTicketsEachUser() - lGame.getTickets( player );
 
         if ( buyTickets > allowedTickets && allowedTickets > 0 )
         {
@@ -236,7 +236,7 @@ public class MainCommandExecutor implements CommandExecutor
             }
         }
 
-        if ( lConfig.getMaxTicketsEachUser() > 0 && lGame.playerInList(
+        if ( lConfig.getMaxTicketsEachUser() > 0 && lGame.getTickets(
                 player ) + buyTickets > lConfig.getMaxTicketsEachUser() )
         {
             lGame.sendMessage( sender, "ErrorAtMax", lConfig.getMaxTicketsEachUser(), lConfig.getPlural( "ticket", lConfig.getMaxTicketsEachUser() ) );
@@ -254,7 +254,7 @@ public class MainCommandExecutor implements CommandExecutor
             if ( lConfig.getMaxTicketsEachUser() > 1 )
             {
                 lGame.sendMessage(
-                        sender, "BoughtTickets", lGame.playerInList( player ), lConfig.getPlural( "ticket", lGame.playerInList( player ) ) );
+                        sender, "BoughtTickets", lGame.getTickets( player ), lConfig.getPlural( "ticket", lGame.getTickets( player ) ) );
             }
             if ( lConfig.isBuyingExtendDeadline() && lGame.timeUntil() < lConfig.getBuyingExtendRemaining() )
             {

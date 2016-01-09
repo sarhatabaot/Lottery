@@ -23,9 +23,7 @@ config:
     taxTarget: ""
   # How many tickets can each player buy? 
     maxTicketsEachUser: 1
-  # Use this option to enable fixed ticket mode.  Setting this will cause rollovers.  
-    numberOfTicketsAvailable: 0
-      
+
     buyingExtend:
       # Should the next draw timer be extended if someone buys a ticket close to the draw?
         enabled: true
@@ -39,7 +37,6 @@ config:
     
     nextexec: 0
     extraInPot: 0
-    jackpot: 0
     debug: false
 message:
     prefix: '&6[LOTTERY]&r'

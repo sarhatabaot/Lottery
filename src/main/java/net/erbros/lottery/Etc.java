@@ -117,25 +117,6 @@ public class Etc
         return stringTimeLeft;
     }
 
-    public static Map<UUID, Integer> realPlayersFromList( final List<UUIDNameEntry> ticketList )
-    {
-        final Map<UUID, Integer> playerList = new HashMap<>();
-        int value;
-        for ( UUIDNameEntry check : ticketList )
-        {
-            if ( playerList.containsKey( check.getUUID() ) )
-            {
-                value = Integer.parseInt( playerList.get( check.getUUID() ).toString() ) + 1;
-            }
-            else
-            {
-                value = 1;
-            }
-            playerList.put( check.getUUID(), value );
-        }
-        return playerList;
-    }
-
     public static int parseInt( final String arg )
     {
         int newInt = 0;

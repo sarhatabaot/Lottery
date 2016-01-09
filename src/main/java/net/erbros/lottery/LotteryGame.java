@@ -5,12 +5,14 @@ import net.erbros.lottery.events.LotteryDrawEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.*;
-import java.security.SecureRandom;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 
@@ -20,9 +22,11 @@ public class LotteryGame
 
     final private Lottery plugin;
     final private LotteryConfig lConfig;
+    final private File playersfile;
 
     public LotteryGame( final Lottery plugin )
     {
+        playersfile = new File( plugin.getDataFolder(), "lotteryPlayers.yml" );
         this.plugin = plugin;
         lConfig = plugin.getLotteryConfig();
     }
@@ -76,118 +80,76 @@ public class LotteryGame
         }
         // If the user paid, continue. Else we would already have sent return
         // false
-        try
-        {
-            final BufferedWriter out = new BufferedWriter(
-                    new FileWriter( plugin.getDataFolder() + File.separator + "lotteryPlayers.txt", true ) );
-            for ( Integer i = 0; i < numberOfTickets; i++ )
-            {
-                out.write( player.getUniqueId()+";"+player.getName() );
-                out.newLine();
-            }
-            out.close();
-        }
-        catch ( IOException e )
-        {
-        }
-
+        YamlConfiguration config = loadPlayersFile();
+        int tickets = config.getInt( "players." + player.getUniqueId() + ".tickets", 0 );
+        tickets += numberOfTickets;
+        config.set( "players." + player.getUniqueId() + ".tickets", tickets );
+        config.set( "players." + player.getUniqueId() + ".name", player.getName() );
+        plugin.getLogger().info( config.saveToString() );
+        savePlayersFile( config );
         return true;
     }
 
-    public Integer playerInList( final Player player )
+    public RandomCollection<LotteryEntry> getBoughtTickets()
     {
-        return playerInList( player.getUniqueId() );
+        final RandomCollection<LotteryEntry> players = new RandomCollection<>();
+
+        YamlConfiguration config = loadPlayersFile();
+        plugin.getLogger().info( "getBoughtTickets():" + config.saveToString() );
+        if ( !config.isConfigurationSection( "players" ) )
+        {
+            return new RandomCollection<>();
+        }
+        ConfigurationSection section = config.getConfigurationSection( "players" );
+        for ( String key : section.getKeys( false ) )
+        {
+            UUID uuid = UUID.fromString( key );
+            int tickets = section.getInt( key + ".tickets", 0 );
+            String name = section.getString( key + ".name", "" );
+            players.add( tickets, new LotteryEntry( uuid, name, tickets ) );
+        }
+        plugin.getLogger().info( "players:" + players.toString() );
+        return players;
     }
 
-    public Integer playerInList( final UUID player )
+    private YamlConfiguration loadPlayersFile()
     {
-        int numberOfTickets = 0;
+        if ( !playersfile.exists() )
+        {
+            try
+            {
+                playersfile.createNewFile();
+            }
+            catch ( IOException e )
+            {
+                e.printStackTrace();
+            }
+        }
+        return YamlConfiguration.loadConfiguration( playersfile );
+    }
+
+    private void savePlayersFile( YamlConfiguration config )
+    {
         try
         {
-            final BufferedReader in = new BufferedReader(
-                    new FileReader( plugin.getDataFolder() + File.separator + "lotteryPlayers.txt" ) );
-
-            String str;
-            while ( ( str = in.readLine() ) != null )
-            {
-                if ( str.trim().isEmpty() )
-                {
-                    continue;
-                }
-                String[] split = str.split( ";" );
-                if ( split.length < 2 )
-                {
-                    continue;
-                }
-                UUID uuid;
-                try
-                {
-                    uuid = UUID.fromString( split[0] );
-                }
-                catch ( IllegalArgumentException ex )
-                {
-                    continue;
-                }
-
-                if ( uuid.equals( player ) )
-                {
-                    numberOfTickets++;
-                }
-            }
-            in.close();
+            config.save( playersfile );
         }
         catch ( IOException e )
         {
+            e.printStackTrace();
         }
-
-        return numberOfTickets;
-    }
-
-    public List<UUIDNameEntry> playersInFile( final String file )
-    {
-        final List<UUIDNameEntry> players = new ArrayList<>();
-        try
-        {
-            final BufferedReader in = new BufferedReader(
-                    new FileReader( plugin.getDataFolder() + File.separator + file ) );
-            String str;
-            while ( ( str = in.readLine() ) != null )
-            {
-                // add players to array.
-                if ( str.trim().isEmpty() )
-                {
-                    continue;
-                }
-                String[] split = str.split( ";" );
-                if ( split.length < 2 )
-                {
-                    continue;
-                }
-                UUID uuid;
-                try
-                {
-                    uuid = UUID.fromString( split[0] );
-                }
-                catch ( IllegalArgumentException ex )
-                {
-                    continue;
-                }
-
-                players.add( new UUIDNameEntry( uuid, split[1] ) );
-            }
-            in.close();
-        }
-        catch ( IOException ignored )
-        {
-        }
-        return players;
     }
 
     public double winningAmount()
     {
         double amount;
-        final List<UUIDNameEntry> players = playersInFile( "lotteryPlayers.txt" );
-        amount = players.size() * Etc.formatAmount( lConfig.getCost(), lConfig.useEconomy() );
+        final RandomCollection<LotteryEntry> players = getBoughtTickets();
+        int ticketsize = 0;
+        for ( LotteryEntry entry : players.values() )
+        {
+            ticketsize += entry.getTickets();
+        }
+        amount = ticketsize * Etc.formatAmount( lConfig.getCost(), lConfig.useEconomy() );
         lConfig.debugMsg( "playerno: " + players.size() + " amount: " + amount );
         // Set the net payout as configured in the config.
         if ( lConfig.getNetPayout() > 0 )
@@ -197,9 +159,6 @@ public class LotteryGame
         // Add extra money added by admins and mods?
         amount += lConfig.getExtraInPot();
         // Any money in jackpot?
-
-        lConfig.debugMsg( "using config store: " + lConfig.getJackpot() );
-        amount += lConfig.getJackpot();
 
         // format it once again.
         amount = Etc.formatAmount( amount, lConfig.useEconomy() );
@@ -217,7 +176,7 @@ public class LotteryGame
             return amount;
         }
 
-        final List<UUIDNameEntry> players = playersInFile( "lotteryPlayers.txt" );
+        final RandomCollection<LotteryEntry> players = getBoughtTickets();
         amount = players.size() * Etc.formatAmount( lConfig.getCost(), lConfig.useEconomy() );
 
         // calculate the tax.
@@ -232,7 +191,7 @@ public class LotteryGame
     public int ticketsSold()
     {
         int sold;
-        final List<UUIDNameEntry> players = playersInFile( "lotteryPlayers.txt" );
+        final RandomCollection<LotteryEntry> players = getBoughtTickets();
         sold = players.size();
         return sold;
     }
@@ -389,7 +348,7 @@ public class LotteryGame
 
     public boolean getWinner()
     {
-        final List<UUIDNameEntry> players = playersInFile( "lotteryPlayers.txt" );
+        final RandomCollection<LotteryEntry> players = getBoughtTickets();
         if ( players.isEmpty() )
         {
             broadcastMessage( "NoWinnerTickets" );
@@ -397,41 +356,12 @@ public class LotteryGame
         }
         else
         {
-            // Find rand. Do minus 1 since its a zero based array.
-            int rand;
-
-            // is max number of tickets 0? If not, include empty tickets not sold.
-            if ( lConfig.getTicketsAvailable() > 0 && ticketsSold() < lConfig.getTicketsAvailable() )
-            {
-                rand = new SecureRandom().nextInt( lConfig.getTicketsAvailable() );
-                // If it wasn't a player winning, then do some stuff. If it was a player, just continue below.
-                if ( rand > players.size() - 1 )
-                {
-                    // No winner this time, pot goes on to jackpot!
-                    final double jackpot = winningAmount();
-
-                    lConfig.setJackpot( jackpot );
-
-                    addToWinnerList( "Jackpot", jackpot, lConfig.useEconomy() ? 0 : lConfig.getMaterial() );
-                    lConfig.setLastwinner( "Jackpot" );
-                    lConfig.setLastwinneramount( jackpot );
-                    broadcastMessage( "NoWinnerRollover", Etc.formatCost( jackpot, lConfig ) );
-                    clearAfterGettingWinner();
-                    return true;
-                }
-            }
-            else
-            {
-                // Else just continue
-                rand = new SecureRandom().nextInt( players.size() );
-            }
-
-            lConfig.debugMsg( "Rand: " + Integer.toString( rand ) );
+            LotteryEntry winner = players.next();
             double amount = winningAmount();
-            int ticketsBought = playerInList( players.get( rand ).getUUID() );
+            int ticketsBought = winner.getTickets();
             if ( lConfig.useEconomy() )
             {
-                OfflinePlayer p = Bukkit.getOfflinePlayer( players.get( rand ).getUUID() );
+                OfflinePlayer p = Bukkit.getOfflinePlayer( winner.getUUID() );
                 if ( !plugin.getEconomy().hasAccount( p ) )
                 {
                     plugin.getEconomy().createPlayerAccount( p );
@@ -442,8 +372,8 @@ public class LotteryGame
                 // Add money to account.
                 plugin.getEconomy().depositPlayer( p, amount );
                 // Announce the winner:
-                broadcastMessage( "WinnerCongrat", players.get(  rand ).getName(), Etc.formatCost( amount, lConfig ), ticketsBought, lConfig.getPlural( "ticket", ticketsBought ) );
-                addToWinnerList( players.get(  rand ).getName(), amount, 0 );
+                broadcastMessage( "WinnerCongrat", winner.getName(), Etc.formatCost( amount, lConfig ), ticketsBought, lConfig.getPlural( "ticket", ticketsBought ) );
+                addToWinnerList( winner.getName(), amount, 0 );
 
                 double taxAmount = taxAmount();
                 if ( taxAmount() > 0 && lConfig.getTaxTarget().length() > 0 )
@@ -466,26 +396,29 @@ public class LotteryGame
                 final int matAmount = (int) Etc.formatAmount( amount, lConfig.useEconomy() );
                 amount = (double) matAmount;
 
-                broadcastMessage( "WinnerCongrat", players.get(  rand ).getName(), Etc.formatCost( amount, lConfig ), ticketsBought, lConfig.getPlural( "ticket", ticketsBought ) );
+                broadcastMessage( "WinnerCongrat", winner.getName(), Etc.formatCost( amount, lConfig ), ticketsBought, lConfig.getPlural( "ticket", ticketsBought ) );
                 broadcastMessage( "WinnerCongratClaim" );
-                addToWinnerList( players.get(  rand ).getName(), amount, lConfig.getMaterial() );
+                addToWinnerList( winner.getName(), amount, lConfig.getMaterial() );
 
-                addToClaimList( players.get(rand).getUUID(), matAmount, lConfig.getMaterial() );
+                addToClaimList( winner.getUUID(), matAmount, lConfig.getMaterial() );
+            }
+            int ticketsize = 0;
+            for ( LotteryEntry entry : players.values() )
+            {
+                ticketsize += entry.getTickets();
             }
             broadcastMessage(
-                    "WinnerSummary", Etc.realPlayersFromList( players ).size(), lConfig.getPlural(
-                            "player", Etc.realPlayersFromList( players ).size() ), players.size(), lConfig.getPlural( "ticket", players.size() ) );
+                    "WinnerSummary", players.size(), lConfig.getPlural(
+                            "player", players.size() ), ticketsize, lConfig.getPlural( "ticket", ticketsize ) );
 
             // Add last winner to config.
-            lConfig.setLastwinner( players.get( rand ).getName() );
+            lConfig.setLastwinner( winner.getName() );
             lConfig.setLastwinneramount( amount );
-
-            lConfig.setJackpot( 0 );
 
             clearAfterGettingWinner();
 
             int material = lConfig.useEconomy() ? -1 : lConfig.getMaterial();
-            LotteryDrawEvent drawEvent = new LotteryDrawEvent( players.get( rand ).getUUID(), players.get( rand ).getName(), ticketsBought, amount, material );
+            LotteryDrawEvent drawEvent = new LotteryDrawEvent( winner.getUUID(), winner.getName(), ticketsBought, amount, material );
             Bukkit.getServer().getPluginManager().callEvent( drawEvent );
         }
         return true;
@@ -501,17 +434,11 @@ public class LotteryGame
             lConfig.setExtraInPot( 0 );
         }
         // Clear file.
-        try
-        {
-            final BufferedWriter out = new BufferedWriter(
-                    new FileWriter( plugin.getDataFolder() + File.separator + "lotteryPlayers.txt", false ) );
-            out.write( "" );
-            out.close();
-        }
-        catch ( IOException e )
-        {
-        }
+        YamlConfiguration config = loadPlayersFile();
+        config.set( "players", null );
+        savePlayersFile( config );
     }
+
 
     public void broadcastMessage( final String topic, final Object... args )
     {
@@ -582,5 +509,17 @@ public class LotteryGame
         // Lets get some colors on this, shall we?
         outMessage = outMessage.replaceAll( "(&([a-fk-or0-9]))", "\u00A7$2" );
         return outMessage;
+    }
+
+    public int getTickets( Player player )
+    {
+        for ( LotteryEntry entry : getBoughtTickets().values() )
+        {
+            if ( entry.getUUID().equals( player.getUniqueId() ) )
+            {
+                return entry.getTickets();
+            }
+        }
+        return 0;
     }
 }

@@ -17,15 +17,17 @@ import java.util.UUID;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-public class UUIDNameEntry
+public class LotteryEntry
 {
     private final UUID uuid;
     private final String name;
+    private int tickets;
 
-    public UUIDNameEntry( UUID uuid, String name )
+    public LotteryEntry( UUID uuid, String name, int tickets )
     {
         this.uuid = uuid;
         this.name = name;
+        this.tickets = tickets;
     }
 
     public UUID getUUID()
@@ -36,5 +38,10 @@ public class UUIDNameEntry
     public String getName()
     {
         return name;
+    }
+
+    public int getTickets()
+    {
+        return tickets;
     }
 }
