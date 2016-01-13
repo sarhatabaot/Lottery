@@ -85,7 +85,6 @@ public class LotteryGame
         tickets += numberOfTickets;
         config.set( "players." + player.getUniqueId() + ".tickets", tickets );
         config.set( "players." + player.getUniqueId() + ".name", player.getName() );
-        plugin.getLogger().info( config.saveToString() );
         savePlayersFile( config );
         return true;
     }
@@ -95,7 +94,6 @@ public class LotteryGame
         final RandomCollection<LotteryEntry> players = new RandomCollection<>();
 
         YamlConfiguration config = loadPlayersFile();
-        plugin.getLogger().info( "getBoughtTickets():" + config.saveToString() );
         if ( !config.isConfigurationSection( "players" ) )
         {
             return new RandomCollection<>();
@@ -108,7 +106,6 @@ public class LotteryGame
             String name = section.getString( key + ".name", "" );
             players.add( tickets, new LotteryEntry( uuid, name, tickets ) );
         }
-        plugin.getLogger().info( "players:" + players.toString() );
         return players;
     }
 
