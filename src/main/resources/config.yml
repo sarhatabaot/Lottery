@@ -1,5 +1,5 @@
 config:
-  # Set this option to true if your using ANY supported economy system
+  # Set this option to true if you're using ANY supported economy system
     useiConomy: false
   # Cost per ticket     
     cost: 5
