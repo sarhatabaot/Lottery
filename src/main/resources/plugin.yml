@@ -1,6 +1,6 @@
 name: Lottery
 main: net.erbros.lottery.Lottery
-version: 1.1.0
+version: 1.1.2
 authors:
   - Erbros
   - KHobbits
@@ -17,11 +17,15 @@ permissions:
       description: Full access to Lottery plugin.
       children:
           lottery.buy: true
+          lottery.notify: true
           lottery.admin.draw: true
           lottery.admin.addtopot: true
           lottery.admin.editconfig: true
   lottery.buy:
       description: Basic lottery rights. Can buy, check lottery info and claim winnings.
+      default: true
+  lottery.notify:
+      description: Notifies a joined player about the next draw.
       default: true
   lottery.admin.draw:
       description: Access to /lottery draw command.
