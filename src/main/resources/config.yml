@@ -4,7 +4,7 @@ config:
   # Cost per ticket     
     cost: 5
   # If you aren't using an economy system, which item is used for currency
-    material: 266
+    material: GOLD_INGOT
     
   # How long between draws  
     hours: 2   
@@ -98,7 +98,7 @@ message:
     player: 'player'
     players: 'players'
     day: 'day'
-    day: 'days'
+    days: 'days'
     hour: 'hour'
     hours: 'hours'
     minute: 'minute'
