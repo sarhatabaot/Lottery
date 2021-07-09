@@ -16,7 +16,8 @@ public class FormatUtil {
         }
     }
 
-    public static double formatAmount(double amount, final boolean usingiConomy) {
+    //Nobody uses iConomy anymore.
+    public static double formatAmount(double amount,@Deprecated final boolean usingiConomy) {
 
         if (usingiConomy) {
             return Math.floor(amount * 100) / 100;
