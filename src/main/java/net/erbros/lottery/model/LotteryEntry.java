@@ -1,4 +1,4 @@
-package net.erbros.lottery;
+package net.erbros.lottery.model;
 
 import java.util.UUID;
 

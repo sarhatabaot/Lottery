@@ -1,6 +1,7 @@
 name: Lottery
-main: net.erbros.lottery.Lottery
-version: 1.1.2
+main: net.erbros.lottery.LotteryPlugin
+version: ${project.version}
+api-version: ${api.version}
 authors:
   - Erbros
   - KHobbits

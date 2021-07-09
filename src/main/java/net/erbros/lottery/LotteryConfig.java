@@ -11,7 +11,7 @@ import java.util.logging.Level;
 
 public class LotteryConfig {
 
-    private final Lottery plugin;
+    private final LotteryPlugin plugin;
     private FileConfiguration config;
     private double cost;
     private double hours;
@@ -37,7 +37,7 @@ public class LotteryConfig {
     private HashMap<String, List<String>> messages;
 
 
-    public LotteryConfig(final Lottery plugin) {
+    public LotteryConfig(final LotteryPlugin plugin) {
         this.plugin = plugin;
         this.config = plugin.getConfig();
     }

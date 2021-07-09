@@ -1,5 +1,9 @@
-package net.erbros.lottery;
+package net.erbros.lottery.model;
 
+import net.erbros.lottery.FormatUtil;
+import net.erbros.lottery.LotteryConfig;
+import net.erbros.lottery.LotteryPlugin;
+import net.erbros.lottery.RandomCollection;
 import net.erbros.lottery.events.LotteryBuyTicketEvent;
 import net.erbros.lottery.events.LotteryDrawEvent;
 import org.bukkit.Bukkit;
@@ -20,11 +24,11 @@ import java.util.regex.Matcher;
 
 public class LotteryGame {
 
-    private final  Lottery plugin;
-    private final  LotteryConfig lotteryConfig;
-    private final  File playersfile;
+    private final LotteryPlugin plugin;
+    private final LotteryConfig lotteryConfig;
+    private final File playersfile;
 
-    public LotteryGame(final Lottery plugin) {
+    public LotteryGame(final LotteryPlugin plugin) {
         playersfile = new File(plugin.getDataFolder(), "lotteryPlayers.yml");
         this.plugin = plugin;
         lotteryConfig = plugin.getLotteryConfig();

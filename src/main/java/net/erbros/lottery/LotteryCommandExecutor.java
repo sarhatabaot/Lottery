@@ -1,5 +1,6 @@
 package net.erbros.lottery;
 
+import net.erbros.lottery.model.LotteryGame;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -13,13 +14,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 
-public class MainCommandExecutor implements CommandExecutor {
+public class LotteryCommandExecutor implements CommandExecutor {
+    private final LotteryPlugin plugin;
+    private final LotteryConfig lConfig;
+    private final LotteryGame lGame;
 
-    final private Lottery plugin;
-    final private LotteryConfig lConfig;
-    final private LotteryGame lGame;
-
-    public MainCommandExecutor(final Lottery plugin) {
+    public LotteryCommandExecutor(final LotteryPlugin plugin) {
         this.plugin = plugin;
         lConfig = plugin.getLotteryConfig();
         lGame = plugin.getLotteryGame();

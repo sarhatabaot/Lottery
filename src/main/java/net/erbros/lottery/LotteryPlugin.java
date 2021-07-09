@@ -1,5 +1,7 @@
 package net.erbros.lottery;
 
+import net.erbros.lottery.model.LotteryDraw;
+import net.erbros.lottery.model.LotteryGame;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
@@ -10,7 +12,7 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 
-public class Lottery extends JavaPlugin {
+public class LotteryPlugin extends JavaPlugin {
 
     public boolean timerStarted = false;
     private Server server = null;
@@ -46,7 +48,7 @@ public class Lottery extends JavaPlugin {
             pm.registerEvents(new PlayerJoinListener(this), this);
         }
 
-        getCommand("lottery").setExecutor(new MainCommandExecutor(this));
+        getCommand("lottery").setExecutor(new LotteryCommandExecutor(this));
 
         // Is the date we are going to draw the lottery set? If not, we should
         // do it.

@@ -6,18 +6,16 @@ import org.bukkit.event.HandlerList;
 
 import java.util.UUID;
 
-public class LotteryDrawEvent extends Event
-{
+public class LotteryDrawEvent extends Event {
 
-    private UUID winner;
-    private int ticketsBought;
-    private double winnings;
-    private Material material;
+    private final UUID winner;
+    private final int ticketsBought;
+    private final double winnings;
+    private final Material material;
     private static final HandlerList handlers = new HandlerList();
-    private String winnerName;
+    private final String winnerName;
 
-    public LotteryDrawEvent( UUID winner, String winnerName, int ticketsBought, double winnings, Material material )
-    {
+    public LotteryDrawEvent(UUID winner, String winnerName, int ticketsBought, double winnings, Material material) {
         this.winner = winner;
         this.winnerName = winnerName;
         this.ticketsBought = ticketsBought;
@@ -26,38 +24,31 @@ public class LotteryDrawEvent extends Event
     }
 
     @Override
-    public HandlerList getHandlers()
-    {
+    public HandlerList getHandlers() {
         return handlers;
     }
 
-    public static HandlerList getHandlerList()
-    {
+    public static HandlerList getHandlerList() {
         return handlers;
     }
 
-    public UUID getWinner()
-    {
+    public UUID getWinner() {
         return winner;
     }
 
-    public String getWinnerName()
-    {
+    public String getWinnerName() {
         return winnerName;
     }
 
-    public int getTicketsBought()
-    {
+    public int getTicketsBought() {
         return ticketsBought;
     }
 
-    public double getWinnings()
-    {
+    public double getWinnings() {
         return winnings;
     }
 
-    public Material getMaterial()
-    {
+    public Material getMaterial() {
         return material;
     }
 }
