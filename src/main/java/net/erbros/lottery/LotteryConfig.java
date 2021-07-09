@@ -1,6 +1,5 @@
 package net.erbros.lottery;
 
-import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.util.ArrayList;
@@ -63,7 +62,7 @@ public class LotteryConfig {
         maxTicketsEachUser = config.getInt("config.maxTicketsEachUser", 1);
         ticketsAvailable = config.getInt("config.numberOfTicketsAvailable", 0);
         nextexec = config.getLong("config.nextexec");
-        cost = Etc.formatAmount(config.getDouble("config.cost", 5), useiConomy);
+        cost = FormatUtil.formatAmount(config.getDouble("config.cost", 5), useiConomy);
         lastwinner = config.getString("config.lastwinner", "");
         lastwinneramount = config.getDouble("config.lastwinneramount", 0);
         buyingExtendDeadline = config.getBoolean("config.buyingExtend.enabled", true);

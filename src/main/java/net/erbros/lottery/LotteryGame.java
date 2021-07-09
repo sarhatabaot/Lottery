@@ -119,7 +119,7 @@ public class LotteryGame {
         for (LotteryEntry entry : players.values()) {
             ticketsize += entry.getTickets();
         }
-        amount = ticketsize * Etc.formatAmount(lotteryConfig.getCost(), lotteryConfig.useEconomy());
+        amount = ticketsize * FormatUtil.formatAmount(lotteryConfig.getCost(), lotteryConfig.useEconomy());
         lotteryConfig.debugMsg("playerno: " + players.size() + " amount: " + amount);
         // Set the net payout as configured in the config.
         if (lotteryConfig.getNetPayout() > 0) {
@@ -130,7 +130,7 @@ public class LotteryGame {
         // Any money in jackpot?
 
         // format it once again.
-        amount = Etc.formatAmount(amount, lotteryConfig.useEconomy());
+        amount = FormatUtil.formatAmount(amount, lotteryConfig.useEconomy());
 
         return amount;
     }
@@ -144,13 +144,13 @@ public class LotteryGame {
         }
 
         final RandomCollection<LotteryEntry> players = getBoughtTickets();
-        amount = players.size() * Etc.formatAmount(lotteryConfig.getCost(), lotteryConfig.useEconomy());
+        amount = players.size() * FormatUtil.formatAmount(lotteryConfig.getCost(), lotteryConfig.useEconomy());
 
         // calculate the tax.
         amount = amount * (1 - (lotteryConfig.getNetPayout() / 100));
 
         // format it once again.
-        amount = Etc.formatAmount(amount, lotteryConfig.useEconomy());
+        amount = FormatUtil.formatAmount(amount, lotteryConfig.useEconomy());
 
         return amount;
     }
@@ -193,7 +193,7 @@ public class LotteryGame {
             final int claimAmount = Integer.parseInt(split[1]);
             final Material claimMaterial = Material.matchMaterial(split[2]);
             player.getInventory().addItem(new ItemStack(claimMaterial, claimAmount));
-            sendMessage(player, "PlayerClaim", Etc.formatMaterialName(claimMaterial.getData().getName()));
+            sendMessage(player, "PlayerClaim", FormatUtil.formatMaterialName(claimMaterial.getData().getName()));
         }
 
         // Add the other players claims to the file again.
@@ -276,7 +276,7 @@ public class LotteryGame {
             return "Draw will occur soon!";
         }
 
-        return Etc.timeUntil(timeLeft, mini, lotteryConfig);
+        return FormatUtil.timeUntil(timeLeft, mini, lotteryConfig);
     }
 
     public boolean getWinner() {
@@ -299,7 +299,7 @@ public class LotteryGame {
                 // Add money to account.
                 plugin.getEconomy().depositPlayer(p, amount);
                 // Announce the winner:
-                broadcastMessage("WinnerCongrat", winner.getName(), Etc.formatCost(amount, lotteryConfig), ticketsBought, lotteryConfig.getPlural("ticket", ticketsBought));
+                broadcastMessage("WinnerCongrat", winner.getName(), FormatUtil.formatCost(amount, lotteryConfig), ticketsBought, lotteryConfig.getPlural("ticket", ticketsBought));
                 addToWinnerList(winner.getName(), amount, Material.AIR);
 
                 double taxAmount = taxAmount();
@@ -315,10 +315,10 @@ public class LotteryGame {
                 }
             } else {
                 // let's throw it to an int.
-                final int matAmount = (int) Etc.formatAmount(amount, lotteryConfig.useEconomy());
+                final int matAmount = (int) FormatUtil.formatAmount(amount, lotteryConfig.useEconomy());
                 amount = (double) matAmount;
 
-                broadcastMessage("WinnerCongrat", winner.getName(), Etc.formatCost(amount, lotteryConfig), ticketsBought, lotteryConfig.getPlural("ticket", ticketsBought));
+                broadcastMessage("WinnerCongrat", winner.getName(), FormatUtil.formatCost(amount, lotteryConfig), ticketsBought, lotteryConfig.getPlural("ticket", ticketsBought));
                 broadcastMessage("WinnerCongratClaim");
                 addToWinnerList(winner.getName(), amount, Material.getMaterial(lotteryConfig.getMaterial()));
 
@@ -398,10 +398,10 @@ public class LotteryGame {
         outMessage = outMessage.replaceAll("%drawLong%", Matcher.quoteReplacement(timeUntil(false)));
 
         // %cost% = cost
-        outMessage = outMessage.replaceAll("%cost%", Matcher.quoteReplacement(Etc.formatCost(lotteryConfig.getCost(), lotteryConfig)));
+        outMessage = outMessage.replaceAll("%cost%", Matcher.quoteReplacement(FormatUtil.formatCost(lotteryConfig.getCost(), lotteryConfig)));
 
         // %pot%
-        outMessage = outMessage.replaceAll("%pot%", Matcher.quoteReplacement(Etc.formatCost(winningAmount(), lotteryConfig)));
+        outMessage = outMessage.replaceAll("%pot%", Matcher.quoteReplacement(FormatUtil.formatCost(winningAmount(), lotteryConfig)));
 
         // %prefix%
         outMessage = outMessage.replaceAll("%prefix%", Matcher.quoteReplacement(lotteryConfig.getMessage("prefix").get(0)));

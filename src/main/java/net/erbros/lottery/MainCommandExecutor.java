@@ -110,7 +110,7 @@ public class MainCommandExecutor implements CommandExecutor {
         // Show different things if we are using iConomy over
         // material.
         if (lConfig.getLastwinner() != null) {
-            lGame.sendMessage(sender, "LastWinner", lConfig.getLastwinner(), Etc.formatCost(lConfig.getLastwinneramount(), lConfig));
+            lGame.sendMessage(sender, "LastWinner", lConfig.getLastwinner(), FormatUtil.formatCost(lConfig.getLastwinneramount(), lConfig));
         }
 
         // if not iConomy, make players check for claims.
@@ -154,7 +154,7 @@ public class MainCommandExecutor implements CommandExecutor {
         int buyTickets = 1;
         if (args.length > 1) {
             // How many tickets do the player want to buy?
-            buyTickets = Etc.parseInt(args[1]);
+            buyTickets = FormatUtil.parseInt(args[1]);
 
             if (buyTickets < 1) {
                 buyTickets = 1;
@@ -189,7 +189,7 @@ public class MainCommandExecutor implements CommandExecutor {
         if (lGame.addPlayer(player, lConfig.getMaxTicketsEachUser(), buyTickets)) {
             // You got your ticket.
             lGame.sendMessage(
-                    sender, "BoughtTicket", buyTickets, lConfig.getPlural("ticket", buyTickets), Etc.formatCost(lConfig.getCost() * buyTickets, lConfig));
+                    sender, "BoughtTicket", buyTickets, lConfig.getPlural("ticket", buyTickets), FormatUtil.formatCost(lConfig.getCost() * buyTickets, lConfig));
 
             // Can a user buy more than one ticket? How many
             // tickets have he bought now?
@@ -253,7 +253,7 @@ public class MainCommandExecutor implements CommandExecutor {
             if (split[2].equalsIgnoreCase("0")) {
                 winListPrice = plugin.getEconomy().format(Double.parseDouble(split[1]));
             } else {
-                winListPrice = split[1] + " " + Etc.formatMaterialName(split[2]);
+                winListPrice = split[1] + " " + FormatUtil.formatMaterialName(split[2]);
             }
             sender.sendMessage((i + 1) + ". " + split[0] + " " + winListPrice);
         }
@@ -265,7 +265,7 @@ public class MainCommandExecutor implements CommandExecutor {
             return;
         }
 
-        final double addToPot = Etc.parseDouble(args[1]);
+        final double addToPot = FormatUtil.parseDouble(args[1]);
 
         if (addToPot == 0) {
             lGame.sendMessage(sender, "ErrorNumber");
@@ -281,7 +281,7 @@ public class MainCommandExecutor implements CommandExecutor {
             return;
         } else if (args.length > 2) {
             if (args[1].equalsIgnoreCase("cost")) {
-                final double newCoin = Etc.parseDouble(args[2]);
+                final double newCoin = FormatUtil.parseDouble(args[2]);
                 if (newCoin <= 0) {
                     lGame.sendMessage(sender, "ErrorNumber");
                 } else {
@@ -289,7 +289,7 @@ public class MainCommandExecutor implements CommandExecutor {
                     lConfig.setCost(newCoin);
                 }
             } else if (args[1].equalsIgnoreCase("hours")) {
-                final double newHours = Etc.parseDouble(args[2]);
+                final double newHours = FormatUtil.parseDouble(args[2]);
                 if (newHours <= 0) {
                     lGame.sendMessage(sender, "ErrorNumber");
                 } else {
@@ -297,7 +297,7 @@ public class MainCommandExecutor implements CommandExecutor {
                     lConfig.setHours(newHours);
                 }
             } else if (args[1].equalsIgnoreCase("maxTicketsEachUser") || args[1].equalsIgnoreCase("max")) {
-                final int newMaxTicketsEachUser = Etc.parseInt(args[2]);
+                final int newMaxTicketsEachUser = FormatUtil.parseInt(args[2]);
                 lGame.sendMessage(sender, "ConfigMax", newMaxTicketsEachUser);
                 lConfig.setMaxTicketsEachUser(newMaxTicketsEachUser);
             }

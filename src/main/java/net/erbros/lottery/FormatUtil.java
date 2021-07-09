@@ -5,7 +5,7 @@ import org.bukkit.Material;
 import java.util.*;
 
 
-public class Etc {
+public class FormatUtil {
     public static String formatCost(double cost, LotteryConfig lConfig) {
         if (lConfig.useEconomy()) {
             return lConfig.formatCurrency((formatAmount(cost, lConfig.useEconomy())));
@@ -41,30 +41,30 @@ public class Etc {
         String stringTimeLeft = "";
 
         if (timeLeft >= 60 * 60 * 24) {
-            final int days = (int) Math.floor(timeLeft / (60 * 60 * 24));
-            timeLeft -= 60 * 60 * 24 * days;
+            final int days = (int) timeLeft / (60 * 60 * 24);
+            timeLeft -= 60L * 60 * 24 * days;
             if (mini) {
-                stringTimeLeft += Integer.toString(days) + "d ";
+                stringTimeLeft += days + "d ";
             } else {
-                stringTimeLeft += Integer.toString(days) + " " + lConfig.getPlural("day", days) + ", ";
+                stringTimeLeft += days + " " + lConfig.getPlural("day", days) + ", ";
             }
         }
         if (timeLeft >= 60 * 60) {
-            final int hours = (int) Math.floor(timeLeft / (60 * 60));
-            timeLeft -= 60 * 60 * hours;
+            final int hours = (int) timeLeft / (60 * 60);
+            timeLeft -= 60L * 60 * hours;
             if (mini) {
-                stringTimeLeft += Integer.toString(hours) + "h ";
+                stringTimeLeft += hours + "h ";
             } else {
-                stringTimeLeft += Integer.toString(hours) + " " + lConfig.getPlural("hour", hours) + ", ";
+                stringTimeLeft += hours + " " + lConfig.getPlural("hour", hours) + ", ";
             }
         }
         if (timeLeft >= 60) {
-            final int minutes = (int) Math.floor(timeLeft / (60));
-            timeLeft -= 60 * minutes;
+            final int minutes = (int) timeLeft / (60);
+            timeLeft -= 60L * minutes;
             if (mini) {
-                stringTimeLeft += Integer.toString(minutes) + "m ";
+                stringTimeLeft += minutes + "m ";
             } else {
-                stringTimeLeft += Integer.toString(minutes) + " " + lConfig.getPlural("minute", minutes) + ", ";
+                stringTimeLeft += minutes + " " + lConfig.getPlural("minute", minutes) + ", ";
             }
         } else {
             // Lets remove the last comma, since it will look bad with 2 days, 3
@@ -93,7 +93,7 @@ public class Etc {
             newInt = Integer.parseInt(arg);
         } catch (NumberFormatException e) {
         }
-        return newInt > 0 ? newInt : 0;
+        return Math.max(newInt, 0);
     }
 
     public static double parseDouble(final String arg) {
