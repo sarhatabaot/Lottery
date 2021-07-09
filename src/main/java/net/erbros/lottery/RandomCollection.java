@@ -3,6 +3,7 @@ package net.erbros.lottery;
 import java.util.*;
 
 //TODO This can probably be implemented using an existing library.
+@Deprecated
 public class RandomCollection<E> {
     private final NavigableMap<Double, E> map = new TreeMap<>();
     private final Random random;
